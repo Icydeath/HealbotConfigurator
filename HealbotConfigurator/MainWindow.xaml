@@ -1,0 +1,221 @@
+﻿<mah:MetroWindow x:Class="HealbotConfigurator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+				xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+				xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+				SaveWindowPosition="True"
+				ResizeMode="CanMinimize"
+        Title="Healbot Configurator" Height="450" Width="1095" IsMaxRestoreButtonEnabled="False" MinWidth="1095" MinHeight="450" WindowStartupLocation="CenterScreen" Closing="MetroWindow_Closing">
+
+	<mah:MetroWindow.RightWindowCommands>
+		<mah:WindowCommands>
+			<Button x:Name="Button_LaunchWindowerPathDialog" 
+							Content="SET WINDOWER PATH"
+							Click="Button_LaunchWindowerPathDialog_Click">
+				<Button.ContentTemplate>
+					<DataTemplate>
+						<StackPanel Orientation="Horizontal">
+							<iconPacks:PackIconMaterial Width="22" 
+																					Height="22" 
+																					VerticalAlignment="Center" 
+																					Kind="FolderCog" />
+							<TextBlock Margin="4 0 0 0" 
+												 VerticalAlignment="Center" 
+												 Text="{Binding}" />
+						</StackPanel>
+					</DataTemplate>
+				</Button.ContentTemplate>
+			</Button>
+			<Button x:Name="Button_LoadSettings" 
+							Content="LOAD"
+							Click="Button_LoadSettings_Click">
+				<Button.ContentTemplate>
+					<DataTemplate>
+						<StackPanel Orientation="Horizontal">
+							<iconPacks:PackIconModern Width="22" 
+																					Height="22" 
+																					VerticalAlignment="Center" 
+																					Kind="FolderOpen" />
+							<TextBlock Margin="4 0 0 0" 
+												 VerticalAlignment="Center" 
+												 Text="{Binding}" />
+						</StackPanel>
+					</DataTemplate>
+				</Button.ContentTemplate>
+			</Button>
+			<Button x:Name="Button_SaveSettings" 
+							Content="SAVE"
+							Click="Button_SaveSettings_Click">
+				<Button.ContentTemplate>
+					<DataTemplate>
+						<StackPanel Orientation="Horizontal">
+							<iconPacks:PackIconMaterial Width="22" 
+																					Height="22" 
+																					VerticalAlignment="Center" 
+																					Kind="ContentSave" />
+							<TextBlock Margin="4 0 0 0" 
+												 VerticalAlignment="Center" 
+												 Text="{Binding}" />
+						</StackPanel>
+					</DataTemplate>
+				</Button.ContentTemplate>
+			</Button>
+		</mah:WindowCommands>
+	</mah:MetroWindow.RightWindowCommands>
+
+	<Grid HorizontalAlignment="Left" Width="1085">
+		<GroupBox Header="Feature Toggles" HorizontalAlignment="Left" Height="261" Margin="10,81,0,0" VerticalAlignment="Top" Width="282">
+			<WrapPanel>
+				<mah:ToggleSwitch x:Name="Toggle_Curing" OffContent="Curing" OnContent="Curing" Toggled="ToggleSwitch_Toggled" Margin="5,0,0,0" Width="110"/>
+				<Label Content="Min. Cure:" Margin="0,4,0,0"/>
+				<mah:NumericUpDown x:Name="Num_Mincure" Minimum="1" Maximum="6" NumericInputMode="Numbers" Value="3" Margin="5,0,0,0" FontSize="16" Width="80" ChangeValueOnTextChanged="True" ValueChanged="Num_Mincure_ValueChanged" />
+				<mah:ToggleSwitch x:Name="Toggle_Curaga" OffContent="Curaga" OnContent="Curaga" Toggled="ToggleSwitch_Toggled" Margin="5,0,0,0"/>
+
+				<mah:ToggleSwitch x:Name="Toggle_Na" OffContent="Na Spells" OnContent="Na Spells" Toggled="ToggleSwitch_Toggled" Margin="5,0,0,0"/>
+				<mah:ToggleSwitch x:Name="Toggle_Erase" OffContent="Erase" OnContent="Erase" Toggled="ToggleSwitch_Toggled" Margin="5,0,0,0"/>
+				<mah:ToggleSwitch x:Name="Toggle_Buffs" OffContent="Buffs" OnContent="Buffs" Toggled="ToggleSwitch_Toggled" Margin="5,0,0,0" />
+				<mah:ToggleSwitch x:Name="Toggle_Debuffs" OffContent="Enfeebling" OnContent="Enfeebling" Toggled="ToggleSwitch_Toggled" Margin="5,0,0,0" />
+				<mah:ToggleSwitch x:Name="Toggle_IgnoreTrusts" OffContent="Ignore Trusts" OnContent="Ignore Trusts" Toggled="ToggleSwitch_Toggled" Margin="5,0,0,0" />
+			</WrapPanel>
+		</GroupBox>
+		<GroupBox Header="WEAPONSKILL SETTINGS" HorizontalAlignment="Left" Height="228" Margin="800,114,0,0" VerticalAlignment="Top" Width="280">
+			<WrapPanel>
+				<mah:ToggleSwitch x:Name="Toggle_Weaponskill" OffContent="use" OnContent="use" Toggled="ToggleSwitch_Toggled" Width="105" Margin="5,0,0,0" />
+				<ComboBox x:Name="Select_Weaponskill" Height="10" Width="159" mah:TextBoxHelper.Watermark="Select Weaponskill" IsEditable="True"/>
+				<Label Content="Mob HP %" Width="110" HorizontalContentAlignment="Right" FontSize="14" />
+				<ComboBox x:Name="Select_Weaponskill_Operator" FontSize="16" Width="43" />
+				<mah:NumericUpDown x:Name="Num_Weaponskill_Percent" Minimum="0" Maximum="100" NumericInputMode="Numbers" Value="0" Margin="5,0,0,0" FontSize="16" Width="111" TextAlignment="Center" />
+				<mah:ToggleSwitch x:Name="Toggle_Weaponskill_Waitfor" OffContent="wait for:" OnContent="wait for:" Toggled="ToggleSwitch_Toggled" Width="110" Margin="5,0,0,0" />
+				<ComboBox x:Name="Select_Weaponskill_Waitfor" Height="10" Width="154" mah:TextBoxHelper.Watermark="Select Player" Margin="0,0,0,0" IsEditable="True"/>
+				<Label Content="TP >" FontSize="16" Margin="115,0,0,0"/>
+				<mah:NumericUpDown x:Name="Num_Weaponskill_Waitfor" Minimum="0" Maximum="3000" NumericInputMode="Numbers" Value="1000" Margin="0,0,0,0" FontSize="16" Width="111" Interval="100" TextAlignment="Center" />
+			</WrapPanel>
+		</GroupBox>
+		<GroupBox Header="SPAM SPELL SETTINGS" Height="70" Margin="800,347,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="280">
+			<WrapPanel>
+				<mah:ToggleSwitch x:Name="Toggle_Spam" OffContent="use" OnContent="use" Toggled="ToggleSwitch_Toggled" Width="105" Margin="5,0,0,0" />
+				<ComboBox x:Name="Select_SpamSpell" Height="10" Width="160" mah:TextBoxHelper.Watermark="Select Spell" IsEditable="True"/>
+			</WrapPanel>
+		</GroupBox>
+		<GroupBox Header="ASSIST SETTINGS" Height="99" Margin="800,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Width="280">
+			<WrapPanel>
+				<mah:ToggleSwitch x:Name="Toggle_Assist" OffContent="assist" OnContent="assist" Toggled="ToggleSwitch_Toggled" Width="105" Margin="5,0,0,0" />
+				<ComboBox x:Name="Select_AssistPlayer" Height="10" Width="160" mah:TextBoxHelper.Watermark="Select Player" IsEditable="True"/>
+				<mah:ToggleSwitch x:Name="Toggle_Attack" OffContent="Engage Target" OnContent="Engage Target" Toggled="ToggleSwitch_Toggled" Width="151" Margin="5,0,0,0" />
+			</WrapPanel>
+		</GroupBox>
+		<GroupBox Header="BUFFS" HorizontalAlignment="Left" Height="163" Margin="297,81,0,0" VerticalAlignment="Top" Width="356">
+			<WrapPanel>
+				<ComboBox x:Name="Select_BuffPlayer" Width="160" mah:TextBoxHelper.Watermark="Select Player" IsEditable="True"/>
+				<ComboBox x:Name="Select_BuffSpell" Width="125" Margin="5,0,0,0" mah:TextBoxHelper.Watermark="Select Buff" IsEditable="True"/>
+				<Button x:Name="Button_AddBuff" Content="Add" Width="50" Margin="5,0,0,0" Click="Button_AddBuff_Click"/>
+				<ListBox x:Name="Lb_Buffs" Height="98" Width="344" FontSize="12" Margin="0,5,0,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" MouseDoubleClick="Lb_Buffs_MouseDoubleClick"></ListBox>
+			</WrapPanel>
+		</GroupBox>
+		<StackPanel Orientation="Horizontal"
+								VerticalAlignment="Top" 
+								HorizontalAlignment="Center"
+								Margin="0,80,350,0">
+			<Button x:Name="Button_ResetBuffs"  Margin="2" Content="RESET" Height="25" Background="White" Click="Button_ResetBuffs_Click">
+				<Button.ToolTip>
+					<ToolTip>
+						<StackPanel>
+							<TextBlock><Run Text="Resets ALL buff timers."/></TextBlock>
+						</StackPanel>
+					</ToolTip>
+				</Button.ToolTip>
+			</Button>
+		</StackPanel>
+		<GroupBox Header="ADDON CONTROLLER" HorizontalAlignment="Left" Height="66" Margin="10,10,0,0" VerticalAlignment="Top" Width="785">
+			<WrapPanel HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,2" Width="775">
+				<ComboBox x:Name="Select_HealbotPlayer" HorizontalAlignment="Left" VerticalAlignment="Top" Width="160" Margin="5,0,0,0" mah:TextBoxHelper.Watermark="Select Character" SelectionChanged="Select_HealbotPlayer_SelectionChanged"/>
+				<Button x:Name="Button_HealbotLoad" Content="LOAD" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="10,0,0,0" Click="Button_HealbotLoad_Click">
+					<Button.ToolTip>
+						<ToolTip>
+							<StackPanel>
+								<TextBlock><Run Text="Loads the Healbot Addon for selected character."/></TextBlock>
+							</StackPanel>
+						</ToolTip>
+					</Button.ToolTip>
+				</Button>
+				<Button x:Name="Button_HealbotOnReload" Content="RELOAD" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="10,0,0,0" Click="Button_HealbotOnReload_Click">
+					<Button.ToolTip>
+						<ToolTip>
+							<StackPanel>
+								<TextBlock>Reload HealBot, resetting everything</TextBlock>
+							</StackPanel>
+						</ToolTip>
+					</Button.ToolTip>
+				</Button>
+				<Button x:Name="Button_HealbotUnload" Content="UNLOAD" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="10,0,0,0" Click="Button_HealbotUnload_Click">
+					<Button.ToolTip>
+						<ToolTip>
+							<StackPanel>
+								<TextBlock><Run Text="Unloads the Healbot Addon for selected character."/></TextBlock>
+							</StackPanel>
+						</ToolTip>
+					</Button.ToolTip>
+				</Button>
+
+				<Button x:Name="Button_HealbotOn" Content="ON" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="50,0,0,0" Background="#FF12C500" Click="Button_HealbotOn_Click"/>
+				<Button x:Name="Button_HealbotOff" Content="OFF" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="10,0,0,0" Background="#FFD60D0D" Click="Button_HealbotOff_Click"/>
+
+				<Button x:Name="Button_HealbotRefresh" Content="REFRESH" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="50,0,0,0" Click="Button_HealbotRefresh_Click">
+					<Button.ToolTip>
+						<ToolTip>
+							<StackPanel>
+								<TextBlock>Reloads settings XMLs in addons/HealBot/data/</TextBlock>
+							</StackPanel>
+						</ToolTip>
+					</Button.ToolTip>
+				</Button>
+			</WrapPanel>
+		</GroupBox>
+		<GroupBox Header="FOLLOW SETTINGS" HorizontalAlignment="Left" Height="70" Margin="10,347,0,0" VerticalAlignment="Top" Width="282">
+			<WrapPanel>
+				<mah:ToggleSwitch x:Name="Toggle_Follow" OffContent="" OnContent="" Toggled="ToggleSwitch_Toggled" Width="50" Margin="5,0,0,0" />
+				<ComboBox x:Name="Select_FollowPlayer" Width="117" mah:TextBoxHelper.Watermark="Select Player" IsEditable="True" Margin="5,0,0,0"/>
+				<mah:NumericUpDown x:Name="Num_Follow" Minimum="0.1" Maximum="30" NumericInputMode="Decimal" Value="1" Margin="5,0,0,0" FontSize="16" Width="85" TextAlignment="Center" Interval="0.1" />
+
+			</WrapPanel>
+		</GroupBox>
+		<GroupBox Header="ENFEEBLING" HorizontalAlignment="Left" Height="168" Margin="297,249,0,0" VerticalAlignment="Top" Width="356">
+			<WrapPanel>
+				<ComboBox x:Name="Select_DebuffSpell" Width="160" Margin="5,0,0,0" mah:TextBoxHelper.Watermark="Select Spell" IsEditable="True"/>
+				<Button x:Name="Button_AddDebuffSpell" Content="Add" Width="50" Margin="5,0,0,0" Click="Button_AddDebuffSpell_Click"/>
+				<ListBox x:Name="Lb_Debuffs" Height="98" Width="344" FontSize="12" Margin="0,5,0,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" MouseDoubleClick="Lb_Debuffs_MouseDoubleClick"></ListBox>
+			</WrapPanel>
+		</GroupBox>
+		<StackPanel Orientation="Horizontal"
+								VerticalAlignment="Top" 
+								HorizontalAlignment="Center"
+								Margin="0,248,285,0">
+			<Button x:Name="Button_ResetDebuffs" Margin="2" Content="RESET" Background="White" Height="25" Click="Button_ResetDebuffs_Click">
+				<Button.ToolTip>
+					<ToolTip>
+						<StackPanel>
+							<TextBlock><Run Text="Resets ALL debuff timers."/></TextBlock>
+						</StackPanel>
+					</ToolTip>
+				</Button.ToolTip>
+			</Button>
+		</StackPanel>
+		<GroupBox Header="MONITOR PLAYER" HorizontalAlignment="Left" Height="163" Margin="658,81,0,0" VerticalAlignment="Top" Width="137">
+			<WrapPanel>
+				<ComboBox x:Name="Select_MonitorPlayer" Width="85" IsEditable="True"></ComboBox>
+				<Button x:Name="Button_MonitorPlayer" Content="Add" Width="35" Margin="5,0,0,0" Click="Button_MonitorPlayer_Click"/>
+				<ListBox x:Name="Lb_MonitorPlayer" Height="100" Width="126" FontSize="12" MouseDoubleClick="Lb_MonitorPlayer_MouseDoubleClick" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+			</WrapPanel>
+		</GroupBox>
+		<GroupBox Header="IGNORE PLAYER" HorizontalAlignment="Left" Height="168" Margin="658,249,0,0" VerticalAlignment="Top" Width="137">
+			<WrapPanel>
+				<ComboBox x:Name="Select_IgnorePlayer" Width="85" IsEditable="True"></ComboBox>
+				<Button x:Name="Button_IgnorePlayer" Content="Add" Width="35" Margin="5,0,0,0" Click="Button_IgnorePlayer_Click"/>
+				<ListBox x:Name="Lb_IgnorePlayer" Height="106" Width="126" FontSize="12" MouseDoubleClick="Lb_IgnorePlayer_MouseDoubleClick" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+			</WrapPanel>
+		</GroupBox>
+	</Grid>
+</mah:MetroWindow>
