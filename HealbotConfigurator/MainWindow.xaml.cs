@@ -353,15 +353,17 @@ namespace HealbotConfigurator
 				SendCommand("hb reload");
 				Thread.Sleep(1000);
 
+				Toggle_Attack.IsOn = false;
+				Toggle_Curing.IsOn = false;
+				Toggle_Curaga.IsOn = false;
+				Toggle_Na.IsOn = false;
+				Toggle_Erase.IsOn = false;
+				Toggle_Buffs.IsOn = false;
+				Toggle_Debuffs.IsOn = false;
+				Toggle_IgnoreTrusts.IsOn = false;
+
 				var config = Configuration.LoadFromFile(openFileDialog.FileName);
 
-				Toggle_Curing.IsOn = config["Features"]["Curing"].BoolValue;
-				Toggle_Curaga.IsOn = config["Features"]["Curaga"].BoolValue;
-				Toggle_Na.IsOn = config["Features"]["Na"].BoolValue;
-				Toggle_Erase.IsOn = config["Features"]["Erase"].BoolValue;
-				Toggle_Buffs.IsOn = config["Features"]["Buffs"].BoolValue;
-				Toggle_Debuffs.IsOn = config["Features"]["Enfeebling"].BoolValue;
-				Toggle_IgnoreTrusts.IsOn = config["Features"]["IgnoreTrusts"].BoolValue;
 				Num_Mincure.Value = config["Features"]["Mincure"].IntValue;
 
 				Select_FollowPlayer.Text = config["Follow"]["FollowPlayer"].StringValue;
@@ -371,29 +373,31 @@ namespace HealbotConfigurator
 				foreach (var txt in config["Buffs"]["BuffSpells"].StringValueArray)
 				{
 					Lb_Buffs.Items.Add(txt);
+					SendCommand("hb buff " + txt);
 				}
 
 				Lb_Debuffs.Items.Clear();
 				foreach (var txt in config["Enfeebling"]["EnfeeblingSpells"].StringValueArray)
 				{
 					Lb_Debuffs.Items.Add(txt);
+					SendCommand("hb debuff " + txt);
 				}
 
 				Lb_MonitorPlayer.Items.Clear();
 				foreach (var txt in config["Monitor"]["MonitorPlayers"].StringValueArray)
 				{
 					Lb_MonitorPlayer.Items.Add(txt);
+					SendCommand("hb watch " + txt);
 				}
 
 				Lb_IgnorePlayer.Items.Clear();
 				foreach (var txt in config["Ignore"]["IgnorePlayers"].StringValueArray)
 				{
 					Lb_IgnorePlayer.Items.Add(txt);
+					SendCommand("hb ignore " + txt);
 				}
 
 				Select_AssistPlayer.Text = config["Assist"]["AssistPlayer"].StringValue;
-				Toggle_Attack.IsOn = config["Assist"]["EngageTarget"].BoolValue;
-
 				Select_Weaponskill.Text = config["Weaponskill"]["WS"].StringValue;
 				Num_Weaponskill_Percent.Value = config["Weaponskill"]["TargetHP"].IntValue;
 				Select_Weaponskill_Operator.Text = config["Weaponskill"]["HPOperator"].StringValue;
@@ -401,6 +405,15 @@ namespace HealbotConfigurator
 				Num_Weaponskill_Waitfor.Value = config["Weaponskill"]["WaitForTP"].IntValue;
 
 				Select_SpamSpell.Text = config["Spam"]["SpamSpell"].StringValue;
+
+				Toggle_Attack.IsOn = config["Assist"]["EngageTarget"].BoolValue;
+				Toggle_Curing.IsOn = config["Features"]["Curing"].BoolValue;
+				Toggle_Curaga.IsOn = config["Features"]["Curaga"].BoolValue;
+				Toggle_Na.IsOn = config["Features"]["Na"].BoolValue;
+				Toggle_Erase.IsOn = config["Features"]["Erase"].BoolValue;
+				Toggle_Buffs.IsOn = config["Features"]["Buffs"].BoolValue;
+				Toggle_Debuffs.IsOn = config["Features"]["Enfeebling"].BoolValue;
+				Toggle_IgnoreTrusts.IsOn = config["Features"]["IgnoreTrusts"].BoolValue;
 			}
 		}
 
