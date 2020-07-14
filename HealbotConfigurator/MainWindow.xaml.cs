@@ -24,12 +24,14 @@ namespace HealbotConfigurator
 		public static EliteAPI _ELITEAPI;
 		public static string AppPath;
 		public static string ConfigPath;
+		public WindowerRes _Res;
+
 		public MainWindow()
 		{
 			InitializeComponent();
 
 			AppPath = AppDomain.CurrentDomain.BaseDirectory;
-			ConfigPath = System.IO.Path.Combine(AppPath, "Configs");
+			ConfigPath = Path.Combine(AppPath, "Configs");
 			if (!Directory.Exists(ConfigPath))
 			{
 				Directory.CreateDirectory(ConfigPath);
@@ -108,16 +110,16 @@ namespace HealbotConfigurator
 				Select_DebuffSpell.Items.Clear();
 			}
 
-			var res = new WindowerRes(Settings.Default.WindowerPath, _ELITEAPI);
-			foreach (var ws in res.Weaponskills)
+			_Res = new WindowerRes(Settings.Default.WindowerPath, _ELITEAPI);
+			foreach (var ws in _Res.Weaponskills)
 			{
 				Select_Weaponskill.Items.Add(ws);
 			}
-			foreach (var spell in res.Spells)
+			foreach (var spell in _Res.Spells)
 			{ 
 				Select_SpamSpell.Items.Add(spell); 
 			}
-			foreach (var spell in res.BuffSpells)
+			foreach (var spell in _Res.BuffSpells)
 			{
 				Select_BuffSpell.Items.Add(spell);
 				Select_DebuffSpell.Items.Add(spell);
@@ -126,17 +128,39 @@ namespace HealbotConfigurator
 
 		private void SetupDefaults()
 		{
-			Toggle_Buffs.IsOn = true;
-			Toggle_Curing.IsOn = true;
-			Toggle_Curaga.IsOn = true;
-			Toggle_Debuffs.IsOn = true;
-			Toggle_Erase.IsOn = true;
-			Toggle_Na.IsOn = true;
+			SendCommand("lua load healbot");
 
-			Toggle_Follow.IsOn = false;
-			Toggle_Spam.IsOn = false;
-			Toggle_Weaponskill.IsOn = false;
-			Toggle_Weaponskill_Waitfor.IsOn = false;
+			var fname = string.Empty;
+			if (_ELITEAPI != null)
+			{
+				fname = _ELITEAPI.Player.Name + "_" + _Res.Jobs[_ELITEAPI.Player.MainJob] + "_" + _Res.Jobs[_ELITEAPI.Player.SubJob];
+			}
+
+			var file = Path.Combine(ConfigPath, fname + ".txt");
+			if (File.Exists(file))
+			{
+				LoadSettingsFromConfig(file);
+			}
+			else if (File.Exists(Path.Combine(ConfigPath, "default.txt")))
+			{
+				LoadSettingsFromConfig(Path.Combine(ConfigPath, "default.txt"));
+			}
+			else
+			{
+				Toggle_Buffs.IsOn = true;
+				Toggle_Curing.IsOn = true;
+				Toggle_Curaga.IsOn = true;
+				Toggle_Debuffs.IsOn = true;
+				Toggle_Erase.IsOn = true;
+				Toggle_Na.IsOn = true;
+
+				Toggle_Follow.IsOn = false;
+				Toggle_Spam.IsOn = false;
+				Toggle_Weaponskill.IsOn = false;
+				Toggle_Weaponskill_Waitfor.IsOn = false;
+
+				SaveSettingsToFile("default.txt");
+			}
 		}
 
 		private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
@@ -268,69 +292,78 @@ namespace HealbotConfigurator
 
 		private void SaveSettings()
 		{
-			var inputDialog = new CustomInputDialog("Save as...", "default");
-			if (inputDialog.ShowDialog() == true)
+			var fname = "default";
+			if (_ELITEAPI != null)
 			{
-				var fileName = inputDialog.DialogValue.Replace(".txt", "") + ".txt";
-				if (string.IsNullOrEmpty(fileName))
-					fileName = "default.txt";
-
-				var config = new Configuration();
-				config["Features"]["Curing"].BoolValue = Toggle_Curing.IsOn;
-				config["Features"]["Curaga"].BoolValue = Toggle_Curaga.IsOn;
-				config["Features"]["Na"].BoolValue = Toggle_Na.IsOn;
-				config["Features"]["Erase"].BoolValue = Toggle_Erase.IsOn;
-				config["Features"]["Buffs"].BoolValue = Toggle_Buffs.IsOn;
-				config["Features"]["Enfeebling"].BoolValue = Toggle_Debuffs.IsOn;
-				config["Features"]["IgnoreTrusts"].BoolValue = Toggle_IgnoreTrusts.IsOn;
-				config["Features"]["Mincure"].IntValue = int.Parse(Num_Mincure.Value.ToString());
-
-				config["Follow"]["FollowPlayer"].StringValue = Select_FollowPlayer.SelectedItem != null ? ((ComboboxItem)Select_FollowPlayer.SelectedItem).Text : !string.IsNullOrEmpty(Select_FollowPlayer.Text) ? Select_FollowPlayer.Text : string.Empty;
-				config["Follow"]["FollowDistance"].FloatValue = float.Parse(Num_Follow.Value.ToString());
-
-				var list = new List<string>();
-				foreach(var b in Lb_Buffs.Items)
-				{
-					list.Add(b.ToString());
-				}
-				config["Buffs"]["BuffSpells"].StringValueArray = list.ToArray();
-
-				list = new List<string>();
-				foreach (var b in Lb_Debuffs.Items)
-				{
-					list.Add(b.ToString());
-				}
-				config["Enfeebling"]["EnfeeblingSpells"].StringValueArray = list.ToArray();
-
-				list = new List<string>();
-				foreach (var b in Lb_MonitorPlayer.Items)
-				{
-					list.Add(b.ToString());
-				}
-				config["Monitor"]["MonitorPlayers"].StringValueArray = list.ToArray();
-
-				list = new List<string>();
-				foreach (var b in Lb_IgnorePlayer.Items)
-				{
-					list.Add(b.ToString());
-				}
-				config["Ignore"]["IgnorePlayers"].StringValueArray = list.ToArray();
-
-
-				config["Assist"]["AssistPlayer"].StringValue = Select_AssistPlayer.SelectedItem != null ? ((ComboboxItem)Select_AssistPlayer.SelectedItem).Text : !string.IsNullOrEmpty(Select_AssistPlayer.Text) ? Select_AssistPlayer.Text : string.Empty;
-				config["Assist"]["EngageTarget"].BoolValue = Toggle_Attack.IsOn;
-
-				config["Weaponskill"]["WS"].StringValue = Select_Weaponskill.SelectedItem != null ? ((ComboboxItem)Select_Weaponskill.SelectedItem).Text : !string.IsNullOrEmpty(Select_Weaponskill.Text) ? Select_Weaponskill.Text : string.Empty;
-				config["Weaponskill"]["TargetHP"].IntValue = int.Parse(Num_Weaponskill_Percent.Value.ToString());
-				config["Weaponskill"]["HPOperator"].StringValue = Select_Weaponskill_Operator.SelectedItem.ToString();
-				config["Weaponskill"]["WaitForPlayer"].StringValue = Select_Weaponskill_Waitfor.SelectedItem != null ? ((ComboboxItem)Select_Weaponskill_Waitfor.SelectedItem).Text : !string.IsNullOrEmpty(Select_Weaponskill_Waitfor.Text) ? Select_Weaponskill_Waitfor.Text : string.Empty;
-				config["Weaponskill"]["WaitForTP"].IntValue = int.Parse(Num_Weaponskill_Waitfor.Value.ToString());
-
-				config["Spam"]["SpamSpell"].StringValue = Select_SpamSpell.SelectedItem != null ? ((ComboboxItem)Select_SpamSpell.SelectedItem).Text : !string.IsNullOrEmpty(Select_SpamSpell.Text) ? Select_SpamSpell.Text : string.Empty;
-
-				config.SaveToFile(System.IO.Path.Combine(ConfigPath, fileName));
+				fname = _ELITEAPI.Player.Name + "_" + _Res.Jobs[_ELITEAPI.Player.MainJob] + "_" + _Res.Jobs[_ELITEAPI.Player.SubJob];
 			}
 
+			var inputDialog = new CustomInputDialog("Save as...", fname);
+			if (inputDialog.ShowDialog() == true)
+			{
+				SaveSettingsToFile(inputDialog.DialogValue.Replace(".txt", "") + ".txt");
+			}
+		}
+
+		private void SaveSettingsToFile(string fileName)
+		{
+			if (string.IsNullOrEmpty(fileName))
+				fileName = "default.txt";
+
+			var config = new Configuration();
+			config["Features"]["Curing"].BoolValue = Toggle_Curing.IsOn;
+			config["Features"]["Curaga"].BoolValue = Toggle_Curaga.IsOn;
+			config["Features"]["Na"].BoolValue = Toggle_Na.IsOn;
+			config["Features"]["Erase"].BoolValue = Toggle_Erase.IsOn;
+			config["Features"]["Buffs"].BoolValue = Toggle_Buffs.IsOn;
+			config["Features"]["Enfeebling"].BoolValue = Toggle_Debuffs.IsOn;
+			config["Features"]["IgnoreTrusts"].BoolValue = Toggle_IgnoreTrusts.IsOn;
+			config["Features"]["Mincure"].IntValue = int.Parse(Num_Mincure.Value.ToString());
+
+			config["Follow"]["FollowPlayer"].StringValue = Select_FollowPlayer.SelectedItem != null ? ((ComboboxItem)Select_FollowPlayer.SelectedItem).Text : !string.IsNullOrEmpty(Select_FollowPlayer.Text) ? Select_FollowPlayer.Text : string.Empty;
+			config["Follow"]["FollowDistance"].FloatValue = float.Parse(Num_Follow.Value.ToString());
+
+			var list = new List<string>();
+			foreach (var b in Lb_Buffs.Items)
+			{
+				list.Add(b.ToString());
+			}
+			config["Buffs"]["BuffSpells"].StringValueArray = list.ToArray();
+
+			list = new List<string>();
+			foreach (var b in Lb_Debuffs.Items)
+			{
+				list.Add(b.ToString());
+			}
+			config["Enfeebling"]["EnfeeblingSpells"].StringValueArray = list.ToArray();
+
+			list = new List<string>();
+			foreach (var b in Lb_MonitorPlayer.Items)
+			{
+				list.Add(b.ToString());
+			}
+			config["Monitor"]["MonitorPlayers"].StringValueArray = list.ToArray();
+
+			list = new List<string>();
+			foreach (var b in Lb_IgnorePlayer.Items)
+			{
+				list.Add(b.ToString());
+			}
+			config["Ignore"]["IgnorePlayers"].StringValueArray = list.ToArray();
+
+
+			config["Assist"]["AssistPlayer"].StringValue = Select_AssistPlayer.SelectedItem != null ? ((ComboboxItem)Select_AssistPlayer.SelectedItem).Text : !string.IsNullOrEmpty(Select_AssistPlayer.Text) ? Select_AssistPlayer.Text : string.Empty;
+			config["Assist"]["EngageTarget"].BoolValue = Toggle_Attack.IsOn;
+
+			config["Weaponskill"]["WS"].StringValue = Select_Weaponskill.SelectedItem != null ? ((ComboboxItem)Select_Weaponskill.SelectedItem).Text : !string.IsNullOrEmpty(Select_Weaponskill.Text) ? Select_Weaponskill.Text : string.Empty;
+			config["Weaponskill"]["TargetHP"].IntValue = int.Parse(Num_Weaponskill_Percent.Value.ToString());
+			config["Weaponskill"]["HPOperator"].StringValue = Select_Weaponskill_Operator.SelectedItem.ToString();
+			config["Weaponskill"]["WaitForPlayer"].StringValue = Select_Weaponskill_Waitfor.SelectedItem != null ? ((ComboboxItem)Select_Weaponskill_Waitfor.SelectedItem).Text : !string.IsNullOrEmpty(Select_Weaponskill_Waitfor.Text) ? Select_Weaponskill_Waitfor.Text : string.Empty;
+			config["Weaponskill"]["WaitForTP"].IntValue = int.Parse(Num_Weaponskill_Waitfor.Value.ToString());
+
+			config["Spam"]["SpamSpell"].StringValue = Select_SpamSpell.SelectedItem != null ? ((ComboboxItem)Select_SpamSpell.SelectedItem).Text : !string.IsNullOrEmpty(Select_SpamSpell.Text) ? Select_SpamSpell.Text : string.Empty;
+
+			config.SaveToFile(Path.Combine(ConfigPath, fileName));
 		}
 
 		private void LoadSettings()
@@ -362,59 +395,65 @@ namespace HealbotConfigurator
 				Toggle_Debuffs.IsOn = false;
 				Toggle_IgnoreTrusts.IsOn = false;
 
-				var config = Configuration.LoadFromFile(openFileDialog.FileName);
-
-				Num_Mincure.Value = config["Features"]["Mincure"].IntValue;
-
-				Select_FollowPlayer.Text = config["Follow"]["FollowPlayer"].StringValue;
-				Num_Follow.Value = config["Follow"]["FollowDistance"].FloatValue;
-
-				Lb_Buffs.Items.Clear();
-				foreach (var txt in config["Buffs"]["BuffSpells"].StringValueArray)
-				{
-					Lb_Buffs.Items.Add(txt);
-					SendCommand("hb buff " + txt);
-				}
-
-				Lb_Debuffs.Items.Clear();
-				foreach (var txt in config["Enfeebling"]["EnfeeblingSpells"].StringValueArray)
-				{
-					Lb_Debuffs.Items.Add(txt);
-					SendCommand("hb debuff " + txt);
-				}
-
-				Lb_MonitorPlayer.Items.Clear();
-				foreach (var txt in config["Monitor"]["MonitorPlayers"].StringValueArray)
-				{
-					Lb_MonitorPlayer.Items.Add(txt);
-					SendCommand("hb watch " + txt);
-				}
-
-				Lb_IgnorePlayer.Items.Clear();
-				foreach (var txt in config["Ignore"]["IgnorePlayers"].StringValueArray)
-				{
-					Lb_IgnorePlayer.Items.Add(txt);
-					SendCommand("hb ignore " + txt);
-				}
-
-				Select_AssistPlayer.Text = config["Assist"]["AssistPlayer"].StringValue;
-				Select_Weaponskill.Text = config["Weaponskill"]["WS"].StringValue;
-				Num_Weaponskill_Percent.Value = config["Weaponskill"]["TargetHP"].IntValue;
-				Select_Weaponskill_Operator.Text = config["Weaponskill"]["HPOperator"].StringValue;
-				Select_Weaponskill_Waitfor.Text = config["Weaponskill"]["WaitForPlayer"].StringValue;
-				Num_Weaponskill_Waitfor.Value = config["Weaponskill"]["WaitForTP"].IntValue;
-
-				Select_SpamSpell.Text = config["Spam"]["SpamSpell"].StringValue;
-
-				Toggle_Attack.IsOn = config["Assist"]["EngageTarget"].BoolValue;
-				Toggle_Curing.IsOn = config["Features"]["Curing"].BoolValue;
-				Toggle_Curaga.IsOn = config["Features"]["Curaga"].BoolValue;
-				Toggle_Na.IsOn = config["Features"]["Na"].BoolValue;
-				Toggle_Erase.IsOn = config["Features"]["Erase"].BoolValue;
-				Toggle_Buffs.IsOn = config["Features"]["Buffs"].BoolValue;
-				Toggle_Debuffs.IsOn = config["Features"]["Enfeebling"].BoolValue;
-				Toggle_IgnoreTrusts.IsOn = config["Features"]["IgnoreTrusts"].BoolValue;
+				LoadSettingsFromConfig(openFileDialog.FileName);
 			}
+		}
+
+		private void LoadSettingsFromConfig(string filename)
+		{
+			var config = Configuration.LoadFromFile(filename);
+
+			Num_Mincure.Value = config["Features"]["Mincure"].IntValue;
+			SendCommand("hb mincure " + Num_Mincure.Value);
+
+			Select_FollowPlayer.Text = config["Follow"]["FollowPlayer"].StringValue;
+			Num_Follow.Value = config["Follow"]["FollowDistance"].FloatValue;
+
+			Lb_Buffs.Items.Clear();
+			foreach (var txt in config["Buffs"]["BuffSpells"].StringValueArray)
+			{
+				Lb_Buffs.Items.Add(txt);
+				SendCommand("hb buff " + txt);
+			}
+
+			Lb_Debuffs.Items.Clear();
+			foreach (var txt in config["Enfeebling"]["EnfeeblingSpells"].StringValueArray)
+			{
+				Lb_Debuffs.Items.Add(txt);
+				SendCommand("hb debuff " + txt);
+			}
+
+			Lb_MonitorPlayer.Items.Clear();
+			foreach (var txt in config["Monitor"]["MonitorPlayers"].StringValueArray)
+			{
+				Lb_MonitorPlayer.Items.Add(txt);
+				SendCommand("hb watch " + txt);
+			}
+
+			Lb_IgnorePlayer.Items.Clear();
+			foreach (var txt in config["Ignore"]["IgnorePlayers"].StringValueArray)
+			{
+				Lb_IgnorePlayer.Items.Add(txt);
+				SendCommand("hb ignore " + txt);
+			}
+
+			Select_AssistPlayer.Text = config["Assist"]["AssistPlayer"].StringValue;
+			Select_Weaponskill.Text = config["Weaponskill"]["WS"].StringValue;
+			Num_Weaponskill_Percent.Value = config["Weaponskill"]["TargetHP"].IntValue;
+			Select_Weaponskill_Operator.Text = config["Weaponskill"]["HPOperator"].StringValue;
+			Select_Weaponskill_Waitfor.Text = config["Weaponskill"]["WaitForPlayer"].StringValue;
+			Num_Weaponskill_Waitfor.Value = config["Weaponskill"]["WaitForTP"].IntValue;
+
+			Select_SpamSpell.Text = config["Spam"]["SpamSpell"].StringValue;
+
+			Toggle_Attack.IsOn = config["Assist"]["EngageTarget"].BoolValue;
+			Toggle_Curing.IsOn = config["Features"]["Curing"].BoolValue;
+			Toggle_Curaga.IsOn = config["Features"]["Curaga"].BoolValue;
+			Toggle_Na.IsOn = config["Features"]["Na"].BoolValue;
+			Toggle_Erase.IsOn = config["Features"]["Erase"].BoolValue;
+			Toggle_Buffs.IsOn = config["Features"]["Buffs"].BoolValue;
+			Toggle_Debuffs.IsOn = config["Features"]["Enfeebling"].BoolValue;
+			Toggle_IgnoreTrusts.IsOn = config["Features"]["IgnoreTrusts"].BoolValue;
 		}
 
 		private void SendCommand(string cmd)
@@ -422,13 +461,7 @@ namespace HealbotConfigurator
 			if (_ELITEAPI != null)
 			{
 				_ELITEAPI.ThirdParty.SendString(@"//" + cmd);
-				//_ELITEAPI.ThirdParty.SendString(@"/echo " + cmd);
 			}
-			//else
-			//{
-			//	var msg = new CustomMessageDialog("ERROR", "Player instance not found. Unable to send command:" + Environment.NewLine + cmd);
-			//	msg.ShowDialog();
-			//}
 		}
 
 		private void Button_SaveSettings_Click(object sender, RoutedEventArgs e)

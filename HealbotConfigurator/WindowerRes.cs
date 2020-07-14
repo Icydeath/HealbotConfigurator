@@ -20,6 +20,8 @@ namespace HealbotConfigurator
 		public List<ComboboxItem> BuffSpells { get; set; }
 		public List<ComboboxItem> BuffAbilities { get; set; }
 
+		public Dictionary<byte, string> Jobs { get; set; }
+
 		public WindowerRes(string windowerpath, EliteAPI api)
 		{
 			if (string.IsNullOrEmpty(windowerpath) || api == null)
@@ -36,6 +38,22 @@ namespace HealbotConfigurator
 			SetupWeaponskills();
 			SetupSpells();
 			SetupBuffAbilities();
+			SetupJobs();
+		}
+
+		private void SetupJobs()
+		{
+			Jobs = new Dictionary<byte, string>();
+			var path = Path.Combine(WindowerPath, "res\\jobs.lua");
+			string luaItems = File.ReadAllText(path);
+			Script script = new Script();
+			DynValue res = script.DoString(luaItems);
+			foreach (DynValue dv in res.ToScalar().Table.Values)
+			{
+				var id = (double)dv.Table["id"];
+				var job = (string)dv.Table["ens"];
+				Jobs.Add((byte)id, job);
+			}
 		}
 
 		private void SetupWeaponskills()
