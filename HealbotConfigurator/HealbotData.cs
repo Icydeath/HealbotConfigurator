@@ -11,6 +11,7 @@ namespace HealbotConfigurator
 	public class HealbotData
 	{
 		public static string WindowerPath;
+		private string BuffListsLuaPath = "addons\\HealBot\\data\\buffLists.lua";
 		public List<BuffList> BuffLists;
 
 		public HealbotData(string windowerpath)
@@ -26,8 +27,7 @@ namespace HealbotConfigurator
 		private void GetBuffLists()
 		{
 			BuffLists = new List<BuffList>();
-
-			var path = Path.Combine(WindowerPath, "addons\\Healbot\\data\\buffLists.lua");
+			var path = Path.Combine(WindowerPath, BuffListsLuaPath);
 			string luaItems = File.ReadAllText(path);
 			Script script = new Script();
 			DynValue res = script.DoString(luaItems);
@@ -78,6 +78,56 @@ namespace HealbotConfigurator
 
 				BuffLists.Add(bl);
 			}
+		}
+
+		public bool SaveBuffList(BuffList list)
+		{
+			try
+			{
+				BuffLists.Add(list);
+
+				var newBuffSets = "return {" + Environment.NewLine;
+				foreach (var blist in BuffLists)
+				{
+					//Console.WriteLine(blist.Name);
+					newBuffSets += "    ['" + blist.Name + "'] = {" + Environment.NewLine;
+					foreach (KeyValuePair<string, List<string>> ilist in blist.List)
+					{
+						//Console.WriteLine("  " + ilist.Key);
+						if (ilist.Key != "me")
+							newBuffSets += "        ['" + ilist.Key + "'] = {" + Environment.NewLine;
+
+						foreach (var val in ilist.Value)
+						{
+							//Console.WriteLine("    " + val);
+							if (ilist.Key != "me")
+								newBuffSets += "            '" + val + "'," + Environment.NewLine;
+							else
+								newBuffSets += "        '" + val + "'," + Environment.NewLine;
+						}
+
+						if (ilist.Key != "me")
+							newBuffSets += "        }," + Environment.NewLine;
+					}
+					newBuffSets += "    }," + Environment.NewLine;
+				}
+				newBuffSets += "}";
+
+				//make a backup if one doesn't already exists
+				var buffListsFile = Path.Combine(WindowerPath, BuffListsLuaPath);
+				var backupFile = Path.Combine(WindowerPath, BuffListsLuaPath.Replace("buffLists.lua", "buffLists.lua.backup"));
+				if (File.Exists(buffListsFile) && !File.Exists(backupFile))
+					File.Copy(buffListsFile, backupFile);
+
+				//overwrite data/buffList.lua
+				File.WriteAllText(buffListsFile, newBuffSets);
+			}
+			catch
+			{
+				return false;
+			}
+
+			return true;
 		}
 	}
 

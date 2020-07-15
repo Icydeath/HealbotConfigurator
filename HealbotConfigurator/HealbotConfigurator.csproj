@@ -93,7 +93,6 @@
       <DependentUpon>CustomInputDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="HealbotData.cs" />
-    <Compile Include="ValidateMethods.cs" />
     <Compile Include="WindowerRes.cs" />
     <Page Include="CustomInputDialog.xaml">
       <SubType>Designer</SubType>

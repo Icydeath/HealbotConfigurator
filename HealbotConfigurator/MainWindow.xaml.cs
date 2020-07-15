@@ -717,7 +717,52 @@ namespace HealbotConfigurator
 
 		private void Button_SaveBuffs_Click(object sender, RoutedEventArgs e)
 		{
+			var inputDialog = new CustomInputDialog("Buff list name:", "mybuffs");
+			if (inputDialog.ShowDialog() == true && !string.IsNullOrEmpty(inputDialog.DialogValue) && Directory.Exists(inputDialog.DialogValue))
+			{
+				var bufflistname = inputDialog.DialogValue;
+				if (!string.IsNullOrEmpty(bufflistname))
+				{
+					bufflistname = bufflistname.ToLower().Trim();
 
+					// handle duplicate list names automatically
+					var check = _HbData.BuffLists.Where(x => x.Name.ToLower() == bufflistname).FirstOrDefault();
+					if (check != null)
+					{
+						int i = 1;
+						while (check != null)
+						{
+							i++;
+							bufflistname += i.ToString();
+							check = _HbData.BuffLists.Where(x => x.Name.ToLower() == bufflistname).FirstOrDefault();
+						}
+					}
+					
+					var buffs = new List<string>();
+					foreach(var item in Lb_Buffs.Items)
+					{
+						if (item.ToString().Contains(_ELITEAPI.Player.Name))
+						{
+							buffs.Add(item.ToString().Replace(_ELITEAPI.Player.Name + " ", "").Trim());
+						}
+					}
+
+					var bufflist = new BuffList 
+					{
+						Name = bufflistname, 
+						List = new Dictionary<string, List<string>> { {"me", buffs} } 
+					};
+
+					var success = _HbData.SaveBuffList(bufflist);
+
+					var msg = new CustomMessageDialog("Saved!", "Buff List: '" + bufflistname + "' has been saved to [..healbot\\data\\buffLists.lua]");
+					if (!success)
+					{
+						msg = new CustomMessageDialog("ERROR", "An error occured while trying to save the set of buffs!" + Environment.NewLine + "Buff list name:'" + bufflistname + "'");
+					}
+					msg.ShowDialog();
+				}
+			}
 		}
 	}
 }
