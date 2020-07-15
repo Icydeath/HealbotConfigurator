@@ -92,6 +92,7 @@
     <Compile Include="CustomInputDialog.xaml.cs">
       <DependentUpon>CustomInputDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="HealbotData.cs" />
     <Compile Include="ValidateMethods.cs" />
     <Compile Include="WindowerRes.cs" />
     <Page Include="CustomInputDialog.xaml">

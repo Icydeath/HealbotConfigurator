@@ -25,6 +25,7 @@ namespace HealbotConfigurator
 		public static string AppPath;
 		public static string ConfigPath;
 		public WindowerRes _Res;
+		public HealbotData _HbData;
 
 		public MainWindow()
 		{
@@ -123,6 +124,17 @@ namespace HealbotConfigurator
 			{
 				Select_BuffSpell.Items.Add(spell);
 				Select_DebuffSpell.Items.Add(spell);
+			}
+
+			_HbData = new HealbotData(Settings.Default.WindowerPath);
+			foreach(var blist in _HbData.BuffLists)
+			{
+				foreach (KeyValuePair<string, List<string>> ilist in blist.List)
+				{
+					var key = ilist.Key == "me" ? _ELITEAPI.Player.Name : ilist.Key;
+					Select_BuffList.Items.Add(blist.Name + " " + key);	
+				}
+				
 			}
 		}
 
@@ -659,6 +671,53 @@ namespace HealbotConfigurator
 		private void Button_ResetDebuffs_Click(object sender, RoutedEventArgs e)
 		{
 			SendCommand("hb reset debuffs");
+		}
+
+		private void Button_LoadBuffs_Click(object sender, RoutedEventArgs e)
+		{
+			var sel_bufflist = Select_BuffList.SelectedItem != null ? (string)Select_BuffList.SelectedItem : !string.IsNullOrEmpty(Select_BuffList.Text) ? Select_BuffList.Text : string.Empty;
+			if (!string.IsNullOrEmpty(sel_bufflist))
+			{
+				var splat = sel_bufflist.Split();
+				var player = _ELITEAPI.Player.Name;
+				var buffs = _HbData.BuffLists.Where(x => x.Name == splat[0] && x.List.ContainsKey(splat[1].Replace(_ELITEAPI.Player.Name, "me"))).Select(x => x.List).FirstOrDefault();
+				if (buffs != null)
+				{
+					if (!sel_bufflist.Contains(player))
+					{
+						var job = _Res.Jobs[_ELITEAPI.Player.MainJob].ToLower();
+						if (sel_bufflist.StartsWith(job))
+							SendCommand("hb bufflist " + sel_bufflist.Replace(job + " ", "") + " " + player);
+						else
+							return;
+					}
+					else
+						SendCommand("hb bufflist " + sel_bufflist + " " + player);
+
+					foreach (var buff in buffs.Values.FirstOrDefault())
+					{
+						var hasItem = false;
+						foreach (var item in Lb_Buffs.Items)
+						{
+							if (item.ToString() == player + " " + buff)
+							{
+								hasItem = true;
+								break;
+							}
+						}
+
+						if (!hasItem)
+						{
+							Lb_Buffs.Items.Add(player + " " + buff);
+						}
+					}
+				}
+			}
+		}
+
+		private void Button_SaveBuffs_Click(object sender, RoutedEventArgs e)
+		{
+
 		}
 	}
 }
