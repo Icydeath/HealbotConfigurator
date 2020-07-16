@@ -154,13 +154,10 @@ namespace HealbotConfigurator
 
 			foreach (var key in keys)
 			{
-				// [Main Dictionary]
 				CurePotencySets.Add(key, new Dictionary<string, Dictionary<string, List<int>>>());
 
-				//setup the potencies main dict. VALUE [key, innerDict]
 				foreach (var pair in res.ToScalar().Table.Get(key).Table.Pairs)
 				{
-					// [Inner Dictionary]
 					var iKey = pair.Key.ToString().Replace("\"", "");
 					if (!iKey.Contains("curaga") && !iKey.Contains("cure") && !iKey.Contains("waltz") && !iKey.Contains("waltzga"))
 					{
