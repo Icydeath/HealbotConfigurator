@@ -86,7 +86,7 @@ namespace HealbotConfigurator
 				var selected = (ComboboxItem)cb.SelectedItem;
 				_ELITEAPI = new EliteAPI((int)selected.Value);
 
-				FillLists();
+				FillLists(true);
 				SetupDefaults();
 			}
 			else
@@ -718,7 +718,7 @@ namespace HealbotConfigurator
 		private void Button_SaveBuffs_Click(object sender, RoutedEventArgs e)
 		{
 			var inputDialog = new CustomInputDialog("Buff list name:", "mybuffs");
-			if (inputDialog.ShowDialog() == true && !string.IsNullOrEmpty(inputDialog.DialogValue) && Directory.Exists(inputDialog.DialogValue))
+			if (inputDialog.ShowDialog() == true)
 			{
 				var bufflistname = inputDialog.DialogValue;
 				if (!string.IsNullOrEmpty(bufflistname))
