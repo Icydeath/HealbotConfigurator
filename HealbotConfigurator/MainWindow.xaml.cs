@@ -760,6 +760,11 @@ namespace HealbotConfigurator
 					{
 						msg = new CustomMessageDialog("ERROR", "An error occured while trying to save the set of buffs!" + Environment.NewLine + "Buff list name:'" + bufflistname + "'");
 					}
+					else
+					{
+						_HbData = new HealbotData(Settings.Default.WindowerPath);
+					}
+
 					msg.ShowDialog();
 				}
 			}
