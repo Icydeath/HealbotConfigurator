@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using MoonSharp.Interpreter;
@@ -29,7 +30,7 @@ namespace HealbotConfigurator
 			GetBuffLists();
 		}
 
-		// BUFF LISTS
+		// BUFF LISTS [TODO: need to add methods that allow the user to remove buff lists]
 		private void GetBuffLists()
 		{
 			BuffLists = new List<BuffList>();
@@ -121,11 +122,7 @@ namespace HealbotConfigurator
 
 				//make a backup if one doesn't already exists
 				var file = Path.Combine(WindowerPath, BuffListsLuaPath);
-				var backupFile = Path.Combine(WindowerPath, BuffListsLuaPath.Replace("buffLists.lua", "buffLists.lua.backup"));
-				if (File.Exists(file) && !File.Exists(backupFile))
-					File.Copy(file, backupFile);
-
-				//overwrite data/buffList.lua
+				BackupFile(file);
 				File.WriteAllText(file, newText);
 			}
 			catch
@@ -224,11 +221,7 @@ namespace HealbotConfigurator
 
 				//make a backup if one doesn't already exists
 				var file = Path.Combine(WindowerPath, CurePotencyLuaPath);
-				var backupFile = Path.Combine(WindowerPath, BuffListsLuaPath.Replace("cure_potency.lua", "cure_potency.lua.backup"));
-				if (File.Exists(file) && !File.Exists(backupFile))
-					File.Copy(file, backupFile);
-
-				//overwrite data/buffList.lua
+				BackupFile(file);
 				File.WriteAllText(file, newText);
 			}
 			catch
@@ -239,7 +232,7 @@ namespace HealbotConfigurator
 			return true;
 		}
 
-		// TODO: PRIORITY SETS
+		// PRIORITY SETS
 		public void GetPrioritySets()
 		{
 			PrioritySets = new Dictionary<string, Dictionary<string, int>>();
@@ -249,17 +242,72 @@ namespace HealbotConfigurator
 			Script script = new Script();
 			DynValue res = script.DoString(luaItems);
 
-			var keys = new List<string>();
-			foreach (DynValue dv in res.ToScalar().Table.Keys)
+			foreach (var pair in res.ToScalar().Table.Pairs.Where(x => !x.Key.ToString().StartsWith("\"_")))
 			{
-				keys.Add(dv.ToString().Replace("\"", ""));
-			}
+				var keyStr = pair.Key.ToString().Replace("\"", "");
+				var valStr = pair.Value.ToString().Replace("\"", "");
 
+				if (!PrioritySets.ContainsKey(keyStr))
+					PrioritySets.Add(keyStr, new Dictionary<string, int>());
+
+				if (valStr.Contains("(Table)"))
+				{
+					foreach (var innerPair in pair.Value.Table.Pairs)
+					{
+						PrioritySets[keyStr].Add(innerPair.Key.ToString().Replace("\"", ""), int.Parse(innerPair.Value.ToString().Replace("\"", "")));
+					}
+				}
+				else
+				{
+					PrioritySets[keyStr].Add(keyStr, int.Parse(valStr));
+				}
+			}
 		}
 
-		public void SavePrioritySet()
+		public bool SavePrioritySet()
 		{
+			try
+			{
+				var newText = "return {" + Environment.NewLine + "    ['_comment'] = 'Lower number = higher priority'," + Environment.NewLine;
+				foreach (var kvp in PrioritySets)
+				{
+					if (kvp.Key == "default")
+					{
+						//Console.WriteLine(kvp.Key + " = " + kvp.Value[kvp.Key]);
+						newText += "    ['" + kvp.Key + "'] = " + kvp.Value[kvp.Key] + "," + Environment.NewLine;
+						continue;
+					}
 
+					//Console.WriteLine(kvp.Key);
+					newText += "    ['" + kvp.Key + "'] = {" + Environment.NewLine;
+					foreach (var inner in kvp.Value)
+					{
+						//Console.WriteLine("  " + inner.Key + " = " + inner.Value);
+						newText += "        ['" + inner.Key + "'] = " + inner.Value + "," + Environment.NewLine;
+					}
+					newText += "    }," + Environment.NewLine;
+				}
+				newText += "}";
+
+				var file = Path.Combine(WindowerPath, PrioritiesLuaPath);
+				BackupFile(file);
+				File.WriteAllText(file, newText);
+			}
+			catch
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+
+
+		private void BackupFile(string file)
+		{
+			var backupFile = file + ".backup";
+			if (File.Exists(file) && !File.Exists(backupFile))
+				File.Copy(file, backupFile);
 		}
 	}
 
@@ -267,11 +315,5 @@ namespace HealbotConfigurator
 	{
 		public string Name = string.Empty;
 		public Dictionary<string, List<string>> List = new Dictionary<string, List<string>>();
-	}
-
-	public class PrioritySet
-	{
-		//Category, <ActionName, PriorityLevel>
-		public Dictionary<string, Dictionary<string, int>> Priorities = new Dictionary<string, Dictionary<string, int>>();
 	}
 }
