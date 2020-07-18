@@ -11,8 +11,4 @@ Uses the [EliteMMO API](http://www.elitemmonetwork.com/forums/) to populate vari
 ## Download can be found here: [Releases](https://github.com/Icydeath/HealbotConfigurator/releases)
 
 ![Screenshot](HealbotConfigurator.png)
-
-**TODO:**
-- [x] Add the ability to edit the bufflists.lua
-- [x] Add the ability to edit the cure_potency.lua
-- [x] Add the ability to edit the priorites.lua
+![Screenshot2](CurePotency.png) ![Screenshot3](Priorities.png)
