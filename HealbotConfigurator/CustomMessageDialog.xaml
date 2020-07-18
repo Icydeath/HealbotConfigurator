@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:HealbotConfigurator"
         mc:Ignorable="d"
         Title="Title" SizeToContent="WidthAndHeight" WindowStartupLocation="CenterScreen"
-        ContentRendered="Window_ContentRendered" ResizeMode="NoResize">
+        ContentRendered="Window_ContentRendered" ResizeMode="NoResize" Loaded="Window_Loaded">
   <Grid Margin="10">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="Auto" />

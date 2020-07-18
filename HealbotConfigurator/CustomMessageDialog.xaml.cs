@@ -26,6 +26,12 @@ namespace HealbotConfigurator
 			Label_Message.Content = !string.IsNullOrEmpty(defaultMsg) ? defaultMsg : "Error: Unable to render the error message.";
 		}
 
+		private void Window_Loaded(object sender, RoutedEventArgs e)
+		{
+			Left = Application.Current.MainWindow.Left + 100;
+			Top = Application.Current.MainWindow.Top + 100;
+		}
+
 		private void Window_ContentRendered(object sender, EventArgs e)
 		{
 			Button_OK.Focus();

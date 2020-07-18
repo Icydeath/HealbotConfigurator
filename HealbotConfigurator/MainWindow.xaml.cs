@@ -48,10 +48,12 @@ namespace HealbotConfigurator
 
 		private void SetupControls()
 		{
+			GetHbData();
+
 			IEnumerable<Process> pol = Process.GetProcessesByName("pol").Union(Process.GetProcessesByName("xiloader")).Union(Process.GetProcessesByName("edenxi"));
 			if (pol.Count() < 1)
 			{
-				MessageBox.Show("FFXI not found");
+				MessageBox.Show("Unable to find an FFXI instance. " + Environment.NewLine + "Close and Reload the application after FFXI is running.", "ERROR");
 				return;
 			}
 
@@ -95,6 +97,21 @@ namespace HealbotConfigurator
 				msg.ShowDialog();
 				Select_HealbotPlayer.SelectedIndex = -1;
 			}
+
+			GetHbData();
+		}
+
+		private void GetHbData()
+		{
+			_HbData = new HealbotData(Settings.Default.WindowerPath);
+			foreach (var blist in _HbData.BuffLists)
+			{
+				foreach (KeyValuePair<string, List<string>> ilist in blist.List)
+				{
+					var key = ilist.Key == "me" ? _ELITEAPI != null ? _ELITEAPI.Player.Name : ilist.Key : ilist.Key;
+					Select_BuffList.Items.Add(blist.Name + " " + key);
+				}
+			}
 		}
 
 		private void FillLists(bool clearLists = false)
@@ -126,16 +143,6 @@ namespace HealbotConfigurator
 				Select_DebuffSpell.Items.Add(spell);
 			}
 
-			_HbData = new HealbotData(Settings.Default.WindowerPath);
-			foreach(var blist in _HbData.BuffLists)
-			{
-				foreach (KeyValuePair<string, List<string>> ilist in blist.List)
-				{
-					var key = ilist.Key == "me" ? _ELITEAPI.Player.Name : ilist.Key;
-					Select_BuffList.Items.Add(blist.Name + " " + key);	
-				}
-				
-			}
 		}
 
 		private void SetupDefaults()
@@ -675,6 +682,9 @@ namespace HealbotConfigurator
 
 		private void Button_LoadBuffs_Click(object sender, RoutedEventArgs e)
 		{
+			if (_ELITEAPI == null)
+				return;
+
 			var sel_bufflist = Select_BuffList.SelectedItem != null ? (string)Select_BuffList.SelectedItem : !string.IsNullOrEmpty(Select_BuffList.Text) ? Select_BuffList.Text : string.Empty;
 			if (!string.IsNullOrEmpty(sel_bufflist))
 			{
@@ -717,6 +727,9 @@ namespace HealbotConfigurator
 
 		private void Button_SaveBuffs_Click(object sender, RoutedEventArgs e)
 		{
+			if (_HbData == null)
+				return;
+
 			var inputDialog = new CustomInputDialog("Buff list name:", "mybuffs");
 			if (inputDialog.ShowDialog() == true)
 			{
@@ -733,8 +746,8 @@ namespace HealbotConfigurator
 						while (check != null)
 						{
 							i++;
-							bufflistname += i.ToString();
-							check = _HbData.BuffLists.Where(x => x.Name.ToLower() == bufflistname).FirstOrDefault();
+							var temp = bufflistname + i.ToString();
+							check = _HbData.BuffLists.Where(x => x.Name.ToLower() == temp).FirstOrDefault();
 						}
 					}
 					
@@ -753,21 +766,88 @@ namespace HealbotConfigurator
 						List = new Dictionary<string, List<string>> { {"me", buffs} } 
 					};
 
-					var success = _HbData.SaveBuffList(bufflist);
-
 					var msg = new CustomMessageDialog("Saved!", "Buff List: '" + bufflistname + "' has been saved to [..healbot\\data\\buffLists.lua]");
-					if (!success)
+					if (_HbData.SaveBuffList(bufflist))
 					{
-						msg = new CustomMessageDialog("ERROR", "An error occured while trying to save the set of buffs!" + Environment.NewLine + "Buff list name:'" + bufflistname + "'");
+						_HbData = new HealbotData(Settings.Default.WindowerPath); // reload the settings
 					}
 					else
 					{
-						_HbData = new HealbotData(Settings.Default.WindowerPath);
+						msg = new CustomMessageDialog("ERROR", "An error occured while trying to save the set of buffs!" + Environment.NewLine + Environment.NewLine + "Buff list name: '" + bufflistname + "'");
 					}
 
 					msg.ShowDialog();
 				}
 			}
+			else
+			{
+				var msg = new CustomMessageDialog("ERROR", "A name must be provided in order to save the buffs as a list in [..healbot\\data\\buffLists.lua]");
+				msg.ShowDialog();
+			}
 		}
+
+		private void Button_DeleteBuffList_Click(object sender, RoutedEventArgs e)
+		{
+			var player = "me";
+			if (_ELITEAPI != null)
+				player = _ELITEAPI.Player.Name;
+
+			var sel_bufflist = Select_BuffList.SelectedItem != null ? (string)Select_BuffList.SelectedItem : !string.IsNullOrEmpty(Select_BuffList.Text) ? Select_BuffList.Text : string.Empty;
+			if (string.IsNullOrEmpty(sel_bufflist)) return;
+
+			var splat = sel_bufflist.Split();
+			var set = splat[0];
+
+			var inner = string.Empty;
+			if (splat.Length > 1 && splat[1] != player)
+				inner = splat[1];
+
+			var msg = new CustomMessageDialog("Success!", "Buff List: '" + sel_bufflist + "' was removed from [..healbot\\data\\buffLists.lua]");
+			// remove it from the data set
+			if (_HbData.RemoveBuffList(set, inner))
+			{
+				// no need to reload the data, just remove it from the select
+				Select_BuffList.Items.Remove(sel_bufflist);
+			}
+			else
+			{
+				msg = new CustomMessageDialog("ERROR", "An error occured while trying to remove the set of buffs!" + Environment.NewLine + Environment.NewLine + "Buff list name: '" + sel_bufflist + "'");
+			}
+			msg.ShowDialog();
+		}
+
+		private void Button_EditCurePotency_Click(object sender, RoutedEventArgs e)
+		{
+			if (_HbData == null) return;
+
+			var popup = new CurePotencyWindow(_HbData.CurePotencySets);
+			if (popup.ShowDialog() == true)
+			{
+				_HbData.CurePotencySets = popup.ModifiedCurePotencySets;
+				if (!_HbData.SaveCurePotencySets())
+				{
+					var msg = new CustomMessageDialog("ERROR", "There was an issue saving the data to cure_potency.lua");
+					msg.ShowDialog();
+				}
+			}
+		}
+
+		private void Button_EditPriorities_Click(object sender, RoutedEventArgs e)
+		{
+			if (_HbData == null) return;
+
+			var popup = new PrioritiesWindow(_HbData.PrioritySets);
+			if (popup.ShowDialog() == true)
+			{
+				_HbData.PrioritySets = popup.ModifiedPrioritySets;
+				if (!_HbData.SavePrioritySets())
+				{
+					var msg = new CustomMessageDialog("ERROR", "There was an issue saving the data to priorities.lua");
+					msg.ShowDialog();
+				}
+			}
+		}
+
+
 	}
 }

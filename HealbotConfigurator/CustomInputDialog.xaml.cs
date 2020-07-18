@@ -19,6 +19,8 @@ namespace HealbotConfigurator
 	/// </summary>
 	public partial class CustomInputDialog : Window
 	{
+		public string DialogValue { get { return Text_CustomInput.Text; } }
+
 		public CustomInputDialog(string title, string value = "")
 		{
 			InitializeComponent();
@@ -26,9 +28,10 @@ namespace HealbotConfigurator
 			Text_CustomInput.Text = value;
 		}
 
-		private void Button_CustomInput_OK_Click(object sender, RoutedEventArgs e)
+		private void Window_Loaded(object sender, RoutedEventArgs e)
 		{
-			DialogResult = true;
+			Left = Application.Current.MainWindow.Left + 100;
+			Top = Application.Current.MainWindow.Top + 100;
 		}
 
 		private void Window_ContentRendered(object sender, EventArgs e)
@@ -37,9 +40,9 @@ namespace HealbotConfigurator
 			Text_CustomInput.Focus();
 		}
 
-		public string DialogValue
+		private void Button_CustomInput_OK_Click(object sender, RoutedEventArgs e)
 		{
-			get { return Text_CustomInput.Text; }
+			DialogResult = true;
 		}
 	}
 }
