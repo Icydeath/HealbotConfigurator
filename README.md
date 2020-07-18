@@ -13,10 +13,6 @@ Uses the [EliteMMO API](http://www.elitemmonetwork.com/forums/) to populate vari
 ![Screenshot](HealbotConfigurator.png)
 
 **TODO:**
-
-- [ ] Add the ability to edit the settings.lua
-- [ ] Add the ability to edit the bufflists.lua
-- [ ] Add the ability to edit the cure_potency.lua
-- [ ] Add the ability to edit the priorites.lua
-- [ ] Add the ability to edit the action_buff_map.lua
-
+- [x] Add the ability to edit the bufflists.lua
+- [x] Add the ability to edit the cure_potency.lua
+- [x] Add the ability to edit the priorites.lua
